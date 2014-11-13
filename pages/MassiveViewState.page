@@ -1,0 +1,39 @@
+<apex:page controller="VSController" >
+    <apex:includeScript value="{!URLFOR($Resource.one2,'js/jquery.js')}" />
+    
+    
+    
+    <apex:form >
+        <apex:actionFunction action="{!updateParams}" name="updateParams" oncomplete="updatePhone()">
+            <apex:param name="contactId" assignTo="{!contactId}" value="" />
+            <apex:param name="mphone" assignTo="{!mphone}" value="" />
+        </apex:actionFunction>
+        <apex:actionFunction action="{!updatePhone}" name="updatePhone" oncomplete="console.log('Updated');" />
+    <table>
+        <tr>
+            <th>Contact Name</th>
+            <th>Contact Phone</th>
+        </tr>
+    <apex:repeat value="{!all_contacts}" var="c">
+        <tr>
+            <td>{!c.Name}</td>
+            <td><apex:inputField value="{!c.MobilePhone}" html-data-id="{!c.Id}" html-class="newphone" /></td>
+        </tr>
+   	</apex:repeat>
+        
+    </table>    
+    
+        
+    <script>
+	var $j = jQuery.noConflict();
+	$j(document).ready(function() {
+        $j('.newphone').blur(function() {
+            console.log($j(this));
+            console.log($j(this).attr('data-id'));
+           	updateParams($j(this).attr('data-id'),$j(this).val());
+        	});
+        });
+    </script>     
+        
+    </apex:form>   
+</apex:page>

@@ -1,0 +1,265 @@
+<apex:page applyBodyTag="false" 
+    docType="html-5.0" 
+    sidebar="false"
+    >
+    <apex:includeScript value="{!$Resource.jquery}" /> 
+    <apex:includeScript value="{!$Resource.d3}" /> 
+    <apex:includeScript value="{!$Resource.plumb}" />
+    <apex:remoteObjects >
+    <apex:remoteObjectModel name="SpeedTest__c" jsShorthand="data" fields="TimeString__c,Download__c,Upload__c,CreatedDate" />
+        
+    
+     <script>
+        var speeds = new Array();
+        var current_offset = 100;
+        var done = false;
+
+        var gradient = ["#F50D00","#D91319","#BE1A32","#A3214C","#882865","#6C2E7F","#513598","#363CB2","#1B43CB","#004AE5","#004AE5","#004AE5","#004AE5"];
+        var peak_color = "#FFDF99";
+
+        var transformed_speeds = [];
+        var speed_plumb = {};
+        var svg = {};
+
+        function getData() {
+            var remote_speed = new SObjectModel.data();
+            remote_speed.retrieve( 
+                { limit: 100, offset: current_offset, orderby: [{Download__c:'DESC'}] },  
+
+                function(err, records) { 
+                    if (err) { 
+                        done = true;
+                        alert(err); 
+                    } else { 
+                        console.log(records.length);
+                        if(records.length == 0) { done = true;}
+                        for(i in records) {
+                            if(records[i]._props) {
+                                speeds.push(records[i]._props);
+                            }
+                        }
+                        current_offset = current_offset + 100;
+                        //   done = true;
+						if(!done) {getData();}
+                     //   else {
+                            speed_plumb = new plumb(speeds);
+                            plumbData();
+                            drawData();
+                    //    }
+                    } 
+                } 
+            );
+        }
+
+        function plumbData() {
+            speed_plumb.generateKey(function(speed) {
+                console.log(speed);
+                var hour = speed.TimeString__c.split(" ")[1];
+                hour = hour.split(":")[0];
+                hour = parseInt(hour);
+
+                return hour;
+                }).meanField("Download__c","DownloadSpeed")
+                  .maxField("Download__c","MaxDownload")
+                  .minField("Download__c","MinDownload")
+                  .meanField("Download__c","MeanDownload");
+        }
+
+
+         function createArc(time,speed) {
+            if(!speed || !speed.DownloadSpeed) {return;}
+
+            var startAngle = time * 15;
+            var endAngle = startAngle + 15;
+            var arc = d3.svg.arc()
+                .innerRadius(40)
+                .outerRadius(150)
+                .startAngle(startAngle * (Math.PI/180)) //converting from degs to radians
+                .endAngle(endAngle * (Math.PI/180)) //just radians
+
+            svg.append("path")
+                .attr("d", arc)
+                .attr("id", "hour"+String(time))
+                .attr("fill", function (d, i) { return gradient[Math.round(speed.DownloadSpeed)]; }) 
+                .attr("stroke", peak_color)
+                .attr("transform", "translate(175,175)");        
+            
+            var text = svg.append("text")
+                        .attr("x", 5)
+                        .attr("dy", 24);
+
+            text.append("textPath")
+                .attr("stroke","white")
+                .style("fill","white")
+                .attr("font-family","Verdana")
+                .attr("font-size","24")
+                .attr("xlink:href","#hour"+String(time))
+                .text(String(Math.round(speed.MeanDownload)));
+
+            var text_speed = svg.append("text")
+                        .attr("x", 10)
+                        .attr("dy", 80);
+
+            text_speed.append("textPath")
+                .attr("stroke",peak_color)
+                .attr("font-family","Verdana")
+                .attr("font-size","12")
+                .attr("xlink:href","#hour"+String(time))
+                .text(String(time));
+         }
+
+        function drawData() {
+            
+            //refresh
+            d3.select("svg").remove();         
+			
+            //container
+            svg = d3.select("#chart").append("svg")
+                   .attr("preserveAspectRatio", "xMidYMid")
+                   .attr("viewBox", "-50 -50 1200 1200")
+                   .attr("width", 1200)
+                   .attr("height", 1200);
+            
+            //Play Time        
+            var startAngle = 20 * 15;
+            var endAngle = startAngle + 75;
+            
+            var arc = d3.svg.arc()
+                .innerRadius(20)
+                .outerRadius(200)
+                .startAngle(startAngle * (Math.PI/180)) //converting from degs to radians
+                .endAngle(endAngle * (Math.PI/180)) //just radians
+
+            svg.append("path")
+                .attr("d", arc)
+                .attr("stroke","black")
+                .attr("id", "peaktime")
+                .attr("fill", function (d, i) { return peak_color; }) 
+                .attr("transform", "translate(175,175)");        
+            
+            var text = svg.append("text")
+                        .attr("x", 14)
+                        .attr("dy", 14);    
+
+            text.append("textPath")
+                .attr("stroke","black")
+                .attr("font-family","Verdana")
+                .attr("font-size","12")
+                .attr("xlink:href","#peaktime")
+                .text("Online Gaming");    
+
+            //Sleep Time
+            startAngle = 24 * 15;
+            endAngle = startAngle + 135;
+            
+            arc = d3.svg.arc()
+                .innerRadius(20)
+                .outerRadius(200)
+                .startAngle(startAngle * (Math.PI/180)) //converting from degs to radians
+                .endAngle(endAngle * (Math.PI/180)) //just radians
+
+            svg.append("path")
+                .attr("d", arc)
+                .attr("stroke","black")
+                .attr("id", "sleeptime")
+                .attr("fill", function (d, i) { return peak_color; }) 
+                .attr("transform", "translate(175,175)");        
+            
+            text = svg.append("text")
+                        .attr("x", 14)
+                        .attr("dy", 14);    
+
+            text.append("textPath")
+                .attr("stroke","black")
+                .attr("font-family","Verdana")
+                .attr("font-size","12")
+                .attr("xlink:href","#sleeptime")
+                .text("Sleeping");  
+
+            //Work Time
+            startAngle = 9 * 15;
+            endAngle = startAngle + 135;
+            
+            arc = d3.svg.arc()
+                .innerRadius(20)
+                .outerRadius(200)
+                .startAngle(startAngle * (Math.PI/180)) //converting from degs to radians
+                .endAngle(endAngle * (Math.PI/180)) //just radians
+
+            svg.append("path")
+                .attr("d", arc)
+                .attr("stroke","black")
+                .attr("id", "worktime")
+                .attr("fill", function (d, i) { return peak_color; }) 
+                .attr("transform", "translate(175,175)");        
+            
+            text = svg.append("text")
+                        .attr("x", 14)
+                        .attr("dy", 14);    
+
+            text.append("textPath")
+                .attr("stroke","black")
+                .attr("font-family","Verdana")
+                .attr("font-size","12")
+                .attr("xlink:href","#worktime")
+                .text("Working"); 
+
+
+            //Netflix Time
+            startAngle = 18 * 15;
+            endAngle = startAngle + 30;
+            
+            arc = d3.svg.arc()
+                .innerRadius(20)
+                .outerRadius(200)
+                .startAngle(startAngle * (Math.PI/180)) //converting from degs to radians
+                .endAngle(endAngle * (Math.PI/180)) //just radians
+
+            svg.append("path")
+                .attr("d", arc)
+                .attr("stroke","black")
+                .attr("id", "netflix")
+                .attr("fill", function (d, i) { return peak_color; }) 
+                .attr("transform", "translate(175,175)");        
+            
+            text = svg.append("text")
+                        .attr("x", 14)
+                        .attr("dy", 14);    
+
+            text.append("textPath")
+                .attr("stroke","black")
+                .attr("font-family","Verdana")
+                .attr("font-size","12")
+                .attr("xlink:href","#netflix")
+                .text("Netflix");    
+       
+
+            for(var i = 0; i < speed_plumb.data.length; i++) {
+                createArc(i,speed_plumb.data[i]);
+            }
+
+
+            
+        }
+
+        
+        $j = jQuery.noConflict();
+        $j(document).ready(function() {
+            getData();
+
+            
+        });
+
+     </script>
+     </apex:remoteObjects>
+
+     <body>
+    
+     <style>
+        h1 { font-size: 32px; font-family: Verdana; }
+        #chart { width: 1200px; height: 1200px;  margin-left:35%}       
+     </style>
+    <div id="chart"></div>
+   </body>
+
+</apex:page>

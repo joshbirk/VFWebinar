@@ -1,0 +1,57 @@
+<apex:page standardController="Account" readOnly="true" docType="html-5.0" applyBodyTag="false" showHeader="false" standardStylesheets="false" >
+    <apex:composition template="{!$Page.RevealJSTemplate}">
+        <apex:define name="slides">
+            <!-- Any section element inside of this container is displayed as a slide -->
+            <div class="slides">
+                <section>
+                    <h2>{!Account.Name}</h2>
+                    <h3>Key Points</h3>
+                    <ul>
+                        <li class="fragment roll-in">{!$ObjectType.Account.fields.AnnualRevenue.label}
+                            <apex:outputText value="{0, number, 000,000.00}">
+                                <apex:param value="{!Account.AnnualRevenue}"/>
+                            </apex:outputText>
+                        </li>
+                        <li class="fragment roll-in">{!$ObjectType.Account.fields.NumberOfEmployees.label}
+                            <apex:outputText value="{0, number, 000}">
+                                <apex:param value="{!Account.NumberOfEmployees}"/>
+                            </apex:outputText>
+                        </li>
+                        <li class="fragment roll-in">{!$ObjectType.Account.fields.Rating.label}:&nbsp;{!Account.Rating}</li>
+                        <li class="fragment roll-in">{!$ObjectType.Account.fields.Ownership.label}:&nbsp;{!Account.Ownership}</li>
+                    </ul>
+                </section>
+                <section>
+                    <section>
+                        <h2>
+                            Opportunities
+                        </h2>
+                        
+                    </section>
+                    <apex:repeat value="{!Account.Opportunities}" var="oppty">
+                        <section>
+                            <h2>{!oppty.Name}</h2>
+                            <div id="chart"></div>
+                        </section>
+                    </apex:repeat>
+                </section>
+                <section>
+                    <section>
+                        <h2>
+                            Contacts
+                        </h2>
+                        
+                    </section>
+                    <apex:repeat value="{!Account.Contacts}" var="contact">
+                        <section>
+                            <h2>{!contact.Name}</h2>
+                            <h3>{!contact.Title}</h3>
+                            <apex:outputText value="{!contact.Profile__c}" escape="false"/>
+                        </section>
+                    </apex:repeat>
+                </section>
+
+            </div>
+        </apex:define>
+    </apex:composition>
+</apex:page>

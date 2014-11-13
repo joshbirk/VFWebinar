@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>VFWebinar</fullName>
+    <types>
+        <members>VSController</members>
+        <members>VSControllerTest</members>
+        <name>ApexClass</name>
+    </types>
+    <types>
+        <members>MassiveViewState</members>
+        <members>NoViewState</members>
+        <members>RevealAccountBasic</members>
+        <members>RevealJSTemplate</members>
+        <members>SpeedTest</members>
+        <name>ApexPage</name>
+    </types>
+    <types>
+        <members>Contact.Profile__c</members>
+        <members>SpeedTest__c.Download__c</members>
+        <members>SpeedTest__c.Pass__c</members>
+        <members>SpeedTest__c.TimeString__c</members>
+        <members>SpeedTest__c.Timestamp__c</members>
+        <members>SpeedTest__c.Upload__c</members>
+        <name>CustomField</name>
+    </types>
+    <types>
+        <members>SpeedTest__c</members>
+        <name>CustomObject</name>
+    </types>
+    <types>
+        <members>SpeedTest__c-SpeedTest Layout</members>
+        <name>Layout</name>
+    </types>
+    <types>
+        <members>c3</members>
+        <members>d3</members>
+        <members>jquery</members>
+        <members>one2</members>
+        <members>plumb</members>
+        <members>revealjs</members>
+        <name>StaticResource</name>
+    </types>
+    <version>31.0</version>
+</Package>

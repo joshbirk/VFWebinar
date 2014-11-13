@@ -1,0 +1,28 @@
+<apex:page controller="VSController">
+    <apex:includeScript value="{!URLFOR($Resource.one2,'js/jquery.js')}" />
+    <script>
+	var $j = jQuery.noConflict();
+	$j(document).ready(function() {
+        $j('.newphone').blur(function() {
+           Visualforce.remoting.Manager.invokeAction(
+                    '{!$RemoteAction.VSController.updatePhone}', 
+                      $j(this).attr('data-id'),$j(this).val(),
+                         function(result, event) {
+                         console.log(result.Id + ' updated');   
+                        });
+        	});
+        });
+    </script>    
+    <table>
+        <tr>
+            <th>Contact Name</th>
+            <th>Contact Phone</th>
+        </tr>
+    <apex:repeat value="{!all_contacts}" var="c">
+    	<tr>
+            <td>{!c.Name}</td>
+            <td><input class="newphone" data-id="{!c.Id}" value="{!c.MobilePhone}" /></td>
+        </tr>
+   	</apex:repeat>
+    </table>    
+</apex:page>
